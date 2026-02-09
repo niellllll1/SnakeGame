@@ -1,27 +1,22 @@
 const canvas = document.getElementById("snakeGame");
 const ctx = canvas.getContext("2d");
 const scoreElement = document.getElementById("score");
-const highElement = document.getElementById("highScore");
 const gameOverScreen = document.getElementById("gameOverScreen");
-const deathMessage = document.getElementById("deathMessage");
 
 const box = 20; 
-let score, highScore, gameActive, gameStarted, snake, food, bomb, d, gameLoop;
+let score, gameActive, gameStarted, snake, d, gameLoop, foodItems;
 
 function init() {
     score = 0;
-    highScore = localStorage.getItem("snakeHighScore") || 0;
-    highElement.innerHTML = highScore;
     scoreElement.innerHTML = score;
     gameActive = true;
     gameStarted = false;
     snake = [{ x: 8 * box, y: 8 * box }];
     d = null;
-    food = getRandomPos();
-    bomb = getRandomPos();
+    foodItems = [getRandomPos(), getRandomPos()]; // 2 random apples
     gameOverScreen.classList.add("hidden");
     if(gameLoop) clearInterval(gameLoop);
-    gameLoop = setInterval(draw, 130);
+    gameLoop = setInterval(draw, 140);
 }
 
 function getRandomPos() {
@@ -47,23 +42,73 @@ document.addEventListener("keydown", (e) => {
 
 function draw() {
     if (!gameActive) return;
-
     ctx.fillStyle = "#16213e";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw Food & Bomb
+    // Draw Apples
     ctx.fillStyle = "#ff4d4d";
-    ctx.fillRect(food.x, food.y, box, box);
-    ctx.fillStyle = "#ff9f43";
-    ctx.beginPath();
-    ctx.arc(bomb.x + box/2, bomb.y + box/2, box/2, 0, Math.PI * 2);
-    ctx.fill();
+    foodItems.forEach(item => ctx.fillRect(item.x, item.y, box, box));
 
     // Draw Snake
     snake.forEach((part, i) => {
         ctx.fillStyle = (i == 0) ? "#4ecca3" : "#45b293";
         ctx.fillRect(part.x, part.y, box, box);
     });
+
+    if (!gameStarted) {
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.font = "16px Arial";
+        ctx.fillText("TAP ARROWS TO START", canvas.width/2, canvas.height/2);
+        return;
+    }
+
+    let snakeX = snake[0].x;
+    let snakeY = snake[0].y;
+    if(d == "LEFT") snakeX -= box;
+    if(d == "UP") snakeY -= box;
+    if(d == "RIGHT") snakeX += box;
+    if(d == "DOWN") snakeY += box;
+
+    // Wall Warp
+    if (snakeX < 0) snakeX = canvas.width - box;
+    else if (snakeX >= canvas.width) snakeX = 0;
+    if (snakeY < 0) snakeY = canvas.height - box;
+    else if (snakeY >= canvas.height) snakeY = 0;
+
+    let newHead = { x: snakeX, y: snakeY };
+
+    // Self-Collision
+    if (snake.some((p, i) => i !== 0 && p.x === snakeX && p.y === snakeY)) {
+        gameActive = false;
+        clearInterval(gameLoop);
+        gameOverScreen.classList.remove("hidden");
+        return;
+    }
+
+    // Eat Apple Logic
+    let ateFood = false;
+    for(let i = 0; i < foodItems.length; i++) {
+        if(snakeX === foodItems[i].x && snakeY === foodItems[i].y) {
+            score++;
+            scoreElement.innerHTML = score;
+            if (score >= 4) {
+                clearInterval(gameLoop);
+                window.location.href = "Vpage.html";
+                return;
+            }
+            foodItems[i] = getRandomPos();
+            ateFood = true;
+            break; 
+        }
+    }
+
+    if(!ateFood) snake.pop();
+    snake.unshift(newHead);
+}
+
+function resetGame() { init(); }
+init();    });
 
     if (!gameStarted) {
         ctx.fillStyle = "white";

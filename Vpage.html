@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Message ❤️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #fff0f3;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Floating Hearts Background */
+        .heart {
+            position: absolute;
+            color: #ffb3c1;
+            font-size: 20px;
+            user-select: none;
+            animation: float 6s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* The Envelope Container */
+        #envelope-wrapper {
+            text-align: center;
+            z-index: 10;
+        }
+
+        #envelope {
+            width: 280px;
+            height: 200px;
+            background: #ff4d6d;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 15px 35px rgba(255, 77, 109, 0.3);
+            transition: transform 0.3s;
+        }
+
+        #envelope:hover {
+            transform: scale(1.05);
+        }
+
+        #envelope::before {
+            content: "";
+            position: absolute;
+            top: -110px;
+            left: 0;
+            border-left: 140px solid transparent;
+            border-right: 140px solid transparent;
+            border-bottom: 110px solid #ff4d6d;
+        }
+
+        .heart-seal {
+            font-size: 60px;
+            z-index: 2;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .tap-text {
+            margin-top: 20px;
+            color: #ff4d6d;
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        /* The Card (Hidden Initially) */
+        .card {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 40px;
+            box-shadow: 0 20px 50px rgba(255, 77, 109, 0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 85%;
+            border: 2px solid #ffccd5;
+            z-index: 10;
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            color: #ff4d6d;
+            font-size: 3.2rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .message-content {
+            color: #4a4a4a;
+            font-size: 1.15rem;
+            line-height: 1.9;
+            min-height: 200px;
+            white-space: pre-wrap;
+        }
+
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+    <div id="heart-container"></div>
+
+    <div id="envelope-wrapper">
+        <div id="envelope" onclick="openLetter()">
+            <div class="heart-seal">💌</div>
+        </div>
+        <p class="tap-text">A surprise is waiting inside...</p>
+    </div>
+
+    <div class="card" id="mainCard">
+        <div style="font-size: 40px; margin-bottom: 10px;">💖</div>
+        <h1>Happy Valentines</h1>
+        <div class="message-content" id="typewriter"></div>
+    </div>
+
+    <script>
+        // The genuine message you wanted back
+        const message = "I hope you know how much light you bring into the world just by being in it. Sometimes we get so caught up in the noise of life that we forget our own incredible value, but please never doubt that you are enough.\n\nYour existence is a gift to those around you, and you are worthy of all the happiness, kindness, and love that comes your way. You aren't just \"worth it\"—you are irreplaceable, cherished, and deeply appreciated for exactly who you are.";
+
+        function openLetter() {
+            // Animation for transition
+            document.getElementById('envelope-wrapper').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('envelope-wrapper').classList.add('hidden');
+                const card = document.getElementById('mainCard');
+                card.style.display = 'block';
+                setTimeout(() => { card.style.opacity = '1'; }, 50);
+                startTypewriter();
+            }, 500);
+        }
+
+        function startTypewriter() {
+            let i = 0;
+            const speed = 45; // Speed of typing
+            const container = document.getElementById('typewriter');
+
+            function type() {
+                if (i < message.length) {
+                    container.innerHTML += message.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        // Floating Hearts Background
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = Math.random() * 3 + 4 + 's';
+            heart.style.fontSize = Math.random() * 15 + 12 + 'px';
+            document.getElementById('heart-container').appendChild(heart);
+            setTimeout(() => { heart.remove(); }, 6000);
+        }
+        setInterval(createHeart, 400);
+    </script>
+</body>
+</html>

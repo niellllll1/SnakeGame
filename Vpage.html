@@ -3,73 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Special Message ❤️</title>
+    <title>A Message For Denise ❤️</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #fff0f3;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Poppins', sans-serif;
-            overflow: hidden;
+        body { background-color: #fff0f3; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Poppins', sans-serif; overflow: hidden; }
+        .heart { position: absolute; color: #ffb3c1; font-size: 20px; animation: float 6s linear infinite; z-index: 1; }
+        @keyframes float { 0% { transform: translateY(110vh); opacity: 1; } 100% { transform: translateY(-10vh); opacity: 0; } }
+
+        #name-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 240, 243, 0.98); z-index: 100;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .modal-content { background: white; padding: 40px; border-radius: 30px; box-shadow: 0 15px 35px rgba(255, 77, 109, 0.2); text-align: center; border: 2px solid #ffccd5; width: 85%; max-width: 350px; }
+        input { padding: 15px; width: 85%; border: 2px solid #ffccd5; border-radius: 12px; font-family: 'Poppins'; outline: none; margin-bottom: 20px; text-align: center; font-size: 1rem; }
+        .go-btn { background: #ff4d6d; color: white; border: none; padding: 12px 35px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 1rem; }
+
+        #content-wrapper { display: none; opacity: 0; text-align: center; z-index: 10; transition: 1.5s; width: 100%; }
+        #envelope { 
+            width: 280px; height: 180px; background: #ff4d6d; position: relative; 
+            cursor: pointer; display: flex; justify-content: center; align-items: center; 
+            border-radius: 0 0 15px 15px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+        }
+        #envelope::before { 
+            content: ""; position: absolute; top: -100px; left: 0; 
+            border-left: 140px solid transparent; border-right: 140px solid transparent; 
+            border-bottom: 100px solid #ff4d6d; 
         }
 
-        /* Floating Hearts Background */
-        .heart {
-            position: absolute;
-            color: #ffb3c1;
-            font-size: 20px;
-            user-select: none;
-            animation: float 6s linear infinite;
-            z-index: 1;
+        .card { 
+            background: white; padding: 40px 25px; border-radius: 40px; 
+            box-shadow: 0 20px 50px rgba(255, 77, 109, 0.25); max-width: 550px; 
+            width: 90%; border: 2px solid #ffccd5; display: none; margin: 20px auto;
+            max-height: 75vh; overflow-y: auto; scroll-behavior: smooth;
+        }
+        
+        .card::-webkit-scrollbar { width: 5px; }
+        .card::-webkit-scrollbar-thumb { background: #ffccd5; border-radius: 10px; }
+
+        h1 { font-family: 'Dancing Script', cursive; color: #ff4d6d; font-size: 2.5rem; margin-bottom: 15px; }
+        .message-content { color: #4a4a4a; font-size: 1.05rem; line-height: 1.7; white-space: pre-wrap; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <div id="heart-container"></div>
+    
+    <audio id="myAudio" loop preload="auto">
+        <source src="glue.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="name-modal">
+        <div class="modal-content">
+            <h3 style="color: #ff4d6d; margin-top: 0;">Who is opening this?</h3>
+            <input type="text" id="userName" placeholder="Enter your name..." autocomplete="off">
+            <button class="go-btn" onclick="startExperience()">Open surprise</button>
+        </div>
+    </div>
+
+    <div id="content-wrapper">
+        <div id="envelope-box">
+            <div id="envelope" onclick="revealCard()">
+                <div style="font-size: 55px; z-index: 5;">💌</div>
+            </div>
+            <p style="color: #ff4d6d; margin-top: 40px; font-weight: bold;">Tap the letter to read...</p>
+        </div>
+
+        <div class="card" id="mainCard">
+            <h1 id="valentine-greeting">Happy Valentines</h1>
+            <div class="message-content" id="typewriter"></div>
+        </div>
+    </div>
+
+    <script>
+        const audio = document.getElementById('myAudio');
+
+        function startExperience() {
+            const nameInput = document.getElementById('userName').value;
+            if (!nameInput.trim()) {
+                alert("Please enter your name first ❤️");
+                return;
+            }
+
+            document.getElementById('valentine-greeting').innerText = `Happy Valentines, ${nameInput}!`;
+            
+            // Trigger local audio file
+            audio.play().catch(e => {
+                console.log("Audio waiting for envelope click.");
+            });
+
+            document.getElementById('name-modal').style.display = 'none';
+            const wrapper = document.getElementById('content-wrapper');
+            wrapper.style.display = 'block';
+            setTimeout(() => { wrapper.style.opacity = '1'; }, 50);
         }
 
-        @keyframes float {
-            0% { transform: translateY(110vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        function revealCard() {
+            // Backup audio play
+            audio.play();
+            
+            document.getElementById('envelope-box').style.display = 'none';
+            const card = document.getElementById('mainCard');
+            card.style.display = 'block';
+            
+            const fullMessage = `I want you to enjoy your day and, most importantly, don't forget to smile—because you're even prettier when you do. Please feel how deserving you are of this day. Valentine's isn't just for those "in love"; it's for anyone who has someone they truly care for.\n\nStay strong, Denise, because I know there are more battles coming. But please, don't give up on your dreams. Keep fighting and remember that you are not fighting alone—I am right here with you, and I am so incredibly proud of you.\n\nThank you for being there after everything we've been through. I appreciate the time you give me, even when you're busy. I see your efforts, and even though I can't see all your silent battles and struggles, I'm still so proud of the woman you are.\n\nNo matter how many toxic or immature people try to pull you down, I'm always here for you even though I'm far from you. I won't leave you behind. I’ll support you and always remind you how valuable you are. Even if the world is against you, you have a companion who will never betray you, no matter what happens.\n\nI want to be honest: Yes, I love you. I still love you. But that doesn't mean I'm expecting more than the friendship we have right now. I never want you to feel guilty for late replies, for falling asleep without telling me, or for being too busy to check in. I won't judge you, I won't get mad, and I won't blame you.\n\nI know you have trauma from the past, and I promise I will never make you feel those things you never wanted to feel again. I’ll treat you the way you deserve—as a friend, as a man who loves you deeply, and as someone who treasures you.\n\nPlease be reassured: even though we are just friends and I still love you, I'm not hurt. It doesn't destroy me. Keeping you in my life is so much better than being strangers again. I don't ever want to lose you again.`;
+
+            let i = 0;
+            const speed = 20; 
+            const container = document.getElementById('typewriter');
+
+            function type() {
+                if (i < fullMessage.length) {
+                    container.innerHTML += fullMessage.charAt(i);
+                    i++;
+                    card.scrollTop = card.scrollHeight;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
         }
 
-        /* The Envelope Container */
-        #envelope-wrapper {
-            text-align: center;
-            z-index: 10;
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = Math.random() * 3 + 4 + 's';
+            document.getElementById('heart-container').appendChild(heart);
+            setTimeout(() => { heart.remove(); }, 6000);
         }
-
-        #envelope {
-            width: 280px;
-            height: 200px;
-            background: #ff4d6d;
-            position: relative;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 0 0 15px 15px;
-            box-shadow: 0 15px 35px rgba(255, 77, 109, 0.3);
-            transition: transform 0.3s;
-        }
-
-        #envelope:hover {
-            transform: scale(1.05);
-        }
-
-        #envelope::before {
-            content: "";
-            position: absolute;
-            top: -110px;
-            left: 0;
-            border-left: 140px solid transparent;
-            border-right: 140px solid transparent;
-            border-bottom: 110px solid #ff4d6d;
-        }
-
-        .heart-seal {
-            font-size: 60px;
-            z-index: 2;
-            animation: pulse 1.5s infinite;
+        setInterval(createHeart, 400);
+    </script>
+</body>
+</html>            animation: pulse 1.5s infinite;
         }
 
         @keyframes pulse {

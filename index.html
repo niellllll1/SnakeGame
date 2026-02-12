@@ -3,34 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Snake Mission</title>
+    <title>A Special Surprise ❤️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="game-container">
-        <h1>SNAKE MISSION</h1>
-        <div class="score-board">
-            <div>Score: <span id="score">0</span></div>
-            <div>Goal: 4</div>
-        </div>
+
+    <div id="bg-glow"></div>
+    <div id="heart-container"></div>
+    <audio id="myAudio" loop><source src="glue.mp3" type="audio/mpeg"></audio>
+
+    <div id="game-container">
+        <div class="stats">Hearts Collected: <span id="score">0</span> / 4 ❤️</div>
         
-        <div class="canvas-wrapper">
-            <canvas id="snakeGame" width="320" height="320"></canvas>
-            <div id="gameOverScreen" class="overlay hidden">
-                <h2>Game Over</h2>
-                <button class="restart-btn" onclick="resetGame()">RESTART</button>
+        <canvas id="snakeGame" width="400" height="400"></canvas>
+
+        <div id="external-controls">
+            <button class="ctrl-btn up" id="upBtn">▲</button>
+            <div class="ctrl-row">
+                <button class="ctrl-btn left" id="leftBtn">◀</button>
+                <button class="ctrl-btn down" id="downBtn">▼</button>
+                <button class="ctrl-btn right" id="rightBtn">▶</button>
             </div>
         </div>
 
-        <div class="controls">
-            <button class="btn up" onclick="setDirection('UP')">▲</button>
-            <div class="mid-row">
-                <button class="btn left" onclick="setDirection('LEFT')">◀</button>
-                <button class="btn down" onclick="setDirection('DOWN')">▼</button>
-                <button class="btn right" onclick="setDirection('RIGHT')">▶</button>
-            </div>
+        <div id="gameOverScreen" class="hidden">
+            <h2 style="color: white;">Stay strong, try again!</h2>
+            <button onclick="init()" class="btn">Reset Game</button>
         </div>
     </div>
+
+    <div id="content-wrapper">
+        <div id="envelope-box">
+            <div id="envelope" onclick="revealCard()">
+                <div style="font-size: 55px; z-index: 5;">💌</div>
+            </div>
+            <h2 class="letter-label">A Letter for You</h2>
+        </div>
+
+        <div class="card" id="mainCard">
+            <h1>Happy Valentine's!</h1>
+            <div class="message-content" id="typewriter"></div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

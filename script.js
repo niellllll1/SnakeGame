@@ -1,21 +1,33 @@
 const canvas = document.getElementById("snakeGame");
 const ctx = canvas.getContext("2d");
 const scoreElement = document.getElementById("score");
-const box = 20;
-let score, gameActive, gameStarted, snake, d, gameLoop, foodItems;
 
-// --- CONFIGURATION ---
-const REDIRECT_URL = "Vpage.html"; 
+// Local Audio Elements
+const eatSound = document.getElementById("eatSound");
+const turnSound = document.getElementById("turnSound");
+const failSound = document.getElementById("failSound");
+
+const box = 20;
+let score, gameActive, gameStarted, snake, d, gameLoop, food;
+
 const TARGET_SCORE = 4;
+const REDIRECT_URL = "Vpage.html";
+
+// Mobile browsers require a "warm up" tap to allow audio
+function unlockAudio() {
+    [eatSound, turnSound, failSound].forEach(s => {
+        s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
+    });
+}
 
 function init() {
     score = 0;
     scoreElement.innerHTML = score;
     gameActive = true;
     gameStarted = false;
-    snake = [{ x: 10 * box, y: 10 * box }];
     d = null;
-    foodItems = [getRandomPos(), getRandomPos()];
+    snake = [{ x: 10 * box, y: 10 * box }, { x: 10 * box, y: 11 * box }];
+    food = getRandomPos();
     document.getElementById("gameOverScreen").classList.add("hidden");
     if(gameLoop) clearInterval(gameLoop);
     gameLoop = setInterval(draw, 140);
@@ -28,110 +40,95 @@ function getRandomPos() {
     };
 }
 
-function drawHeart(x, y, size) {
-    ctx.fillStyle = "#e94560";
-    ctx.beginPath();
-    let topCurveHeight = size * 0.3;
-    ctx.moveTo(x + size / 2, y + topCurveHeight);
-    ctx.bezierCurveTo(x + size / 2, y, x, y, x, y + topCurveHeight);
-    ctx.bezierCurveTo(x, y + (size + topCurveHeight) / 2, x + size / 2, y + (size + topCurveHeight) / 2, x + size / 2, y + size);
-    ctx.bezierCurveTo(x + size / 2, y + (size + topCurveHeight) / 2, x + size, y + (size + topCurveHeight) / 2, x + size, y + topCurveHeight);
-    ctx.bezierCurveTo(x + size, y, x + size / 2, y, x + size / 2, y + topCurveHeight);
-    ctx.fill();
-}
-
-function handleInput(dir) {
-    gameStarted = true;
-    if (dir === "UP" && d !== "DOWN") d = "UP";
-    if (dir === "DOWN" && d !== "UP") d = "DOWN";
-    if (dir === "LEFT" && d !== "RIGHT") d = "LEFT";
-    if (dir === "RIGHT" && d !== "LEFT") d = "RIGHT";
-}
-
-// Mobile Button Listeners
-document.getElementById("upBtn").addEventListener("touchstart", (e) => { e.preventDefault(); handleInput("UP"); });
-document.getElementById("downBtn").addEventListener("touchstart", (e) => { e.preventDefault(); handleInput("DOWN"); });
-document.getElementById("leftBtn").addEventListener("touchstart", (e) => { e.preventDefault(); handleInput("LEFT"); });
-document.getElementById("rightBtn").addEventListener("touchstart", (e) => { e.preventDefault(); handleInput("RIGHT"); });
-
-// Click fallback
-document.getElementById("upBtn").addEventListener("click", () => handleInput("UP"));
-document.getElementById("downBtn").addEventListener("click", () => handleInput("DOWN"));
-document.getElementById("leftBtn").addEventListener("click", () => handleInput("LEFT"));
-document.getElementById("rightBtn").addEventListener("click", () => handleInput("RIGHT"));
-
-// Keyboard Listeners
-document.addEventListener("keydown", (e) => {
-    const keys = { 37: "LEFT", 38: "UP", 39: "RIGHT", 40: "DOWN" };
-    if (keys[e.keyCode]) handleInput(keys[e.keyCode]);
-});
-
 function draw() {
     if (!gameActive) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    foodItems.forEach(item => drawHeart(item.x, item.y, box));
 
+    // Food (Heart)
+    ctx.font = "20px serif";
+    ctx.fillText("❤️", food.x, food.y + box - 2);
+
+    // Snake Body
     snake.forEach((part, i) => {
-        ctx.fillStyle = (i == 0) ? "#ff4d6d" : "#c9184a";
+        const isHead = i === 0;
+        ctx.fillStyle = isHead ? "#ff758c" : "#ffb3c1";
         ctx.beginPath();
-        ctx.roundRect(part.x, part.y, box-2, box-2, 5);
+        ctx.roundRect(part.x + 1, part.y + 1, box - 2, box - 2, 8);
         ctx.fill();
+        if (isHead) { // Eyes
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(part.x + 6, part.y + 7, 2, 0, Math.PI * 2);
+            ctx.arc(part.x + 14, part.y + 7, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
     });
 
-    if (!gameStarted) {
-        ctx.fillStyle = "white"; ctx.textAlign = "center";
-        ctx.font = "14px Poppins";
-        ctx.fillText("TAP BUTTONS TO START", canvas.width/2, canvas.height/2);
-        return;
-    }
+    if (!gameStarted) return;
 
-    let snakeX = snake[0].x;
-    let snakeY = snake[0].y;
-    if(d == "LEFT") snakeX -= box;
-    if(d == "UP") snakeY -= box;
-    if(d == "RIGHT") snakeX += box;
-    if(d == "DOWN") snakeY += box;
+    let sX = snake[0].x;
+    let sY = snake[0].y;
+    if(d === "UP") sY -= box;
+    if(d === "DOWN") sY += box;
+    if(d === "LEFT") sX -= box;
+    if(d === "RIGHT") sX += box;
 
-    if (snakeX < 0) snakeX = canvas.width - box; else if (snakeX >= canvas.width) snakeX = 0;
-    if (snakeY < 0) snakeY = canvas.height - box; else if (snakeY >= canvas.height) snakeY = 0;
+    // Screen wrapping
+    if (sX < 0) sX = canvas.width - box; else if (sX >= canvas.width) sX = 0;
+    if (sY < 0) sY = canvas.height - box; else if (sY >= canvas.height) sY = 0;
 
-    for(let i = 0; i < foodItems.length; i++) {
-        if(snakeX === foodItems[i].x && snakeY === foodItems[i].y) {
-            score++;
-            scoreElement.innerHTML = score;
-            
-            // REDIRECT TO Vpage.html
-            if (score >= TARGET_SCORE) {
-                gameActive = false;
-                clearInterval(gameLoop);
-                window.location.href = REDIRECT_URL; 
-                return;
-            }
-            
-            foodItems[i] = getRandomPos();
-            snake.push({}); 
-        }
-    }
+    let head = { x: sX, y: sY };
 
-    if (snake.some((p, i) => i !== 0 && p.x === snakeX && p.y === snakeY)) {
+    // Death Check
+    if (snake.some(p => p.x === head.x && p.y === head.y)) {
         gameActive = false;
+        failSound.play().catch(()=>{}); // Optional local fail sound
         document.getElementById("gameOverScreen").classList.remove("hidden");
         return;
     }
+
+    // Eat Check
+    if (sX === food.x && sY === food.y) {
+        score++;
+        scoreElement.innerHTML = score;
+        
+        // Play EAT sound
+        eatSound.currentTime = 0;
+        eatSound.play().catch(()=>{});
+
+        if (score >= TARGET_SCORE) {
+            gameActive = false;
+            window.location.href = REDIRECT_URL;
+            return;
+        }
+        food = getRandomPos();
+    } else {
+        snake.pop();
+    }
+    snake.unshift(head);
+}
+
+function setDir(newDir) {
+    if (!gameStarted) unlockAudio();
     
-    snake.pop();
-    snake.unshift({ x: snakeX, y: snakeY });
+    // Play TURN sound only if direction actually changes
+    if (d !== newDir) { 
+        turnSound.currentTime = 0;
+        turnSound.play().catch(()=>{}); 
+    }
+
+    gameStarted = true;
+    if(newDir === "UP" && d !== "DOWN") d = "UP";
+    if(newDir === "DOWN" && d !== "UP") d = "DOWN";
+    if(newDir === "LEFT" && d !== "RIGHT") d = "LEFT";
+    if(newDir === "RIGHT" && d !== "LEFT") d = "RIGHT";
 }
 
-function createHeart() {
-    const heart = document.createElement('div');
-    heart.classList.add('heart-bg');
-    heart.innerHTML = '❤️';
-    heart.style.left = Math.random() * 100 + 'vw';
-    heart.style.animationDuration = Math.random() * 5 + 5 + 's';
-    document.getElementById('heart-container').appendChild(heart);
-    setTimeout(() => { heart.remove(); }, 8000);
-}
+["upBtn", "downBtn", "leftBtn", "rightBtn"].forEach(id => {
+    const btn = document.getElementById(id);
+    const dir = id.replace("Btn", "").toUpperCase();
+    btn.onclick = (e) => { e.preventDefault(); setDir(dir); };
+    btn.ontouchstart = (e) => { e.preventDefault(); setDir(dir); };
+});
 
-setInterval(createHeart, 600);
 init();
